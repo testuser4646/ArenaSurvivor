@@ -9,7 +9,6 @@ public class StageManager : MonoBehaviour
     public static StageManager Instance;
 
     [SerializeField] List<Rect> spawnArea;
-    [SerializeField] Color color = new Color(1, 0, 0, 0.5f);
 
     float arenaRadius = 28f;
     Vector2 arenaCenter = Vector2.zero;

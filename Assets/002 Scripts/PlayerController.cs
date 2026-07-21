@@ -3,79 +3,93 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : Character
 {
-    Rigidbody2D rb;
-    Collider2D col;
+    Camera cam;
 
-    Vector2 dir;
-    float moveSpeed;
-
-    //[SerializeField] HPBar hpBar;
-
-    //Animator animator;
-
-    int isMove;
-    bool isDead;
-
-    private void Awake()
+    protected override void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
-        col = GetComponent<Collider2D>();
-        //animator = GetComponent<Animator>();
+        base.Awake();
+
+        cam = Camera.main;
     }
+
     void Start()
     {
         Init();
     }
 
-    // Update is called once per frame
     void Update()
     {
-        dir = Vector2.zero;
         if (isDead)
             return;
 
+        InputMove();
+        InputLook();
+        InputAction();
+
+        RotateHand();
+    }
+
+    void InputMove()
+    {
+        dir = Vector2.zero;
+
         if (Keyboard.current.wKey.isPressed)
-        {
             dir += Vector2.up;
-        }
-        if (Keyboard.current.aKey.isPressed)
-        {
-            dir += Vector2.left;
-        }
+
         if (Keyboard.current.sKey.isPressed)
-        {
             dir += Vector2.down;
-        }
+
+        if (Keyboard.current.aKey.isPressed)
+            dir += Vector2.left;
+
         if (Keyboard.current.dKey.isPressed)
-        {
             dir += Vector2.right;
-        }
+
         dir = dir.normalized;
-        //if (dir == Vector2.zero)
-        //{
-        //    animator.SetBool(isMove, false);
-        //}
-        //else
-        //{
-        //    animator.SetBool(isMove, true);
-        //}
     }
 
-    private void FixedUpdate()
+    void InputLook()
     {
-        rb.linearVelocity = dir * moveSpeed;
+        Vector3 mouse =
+            cam.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+
+        mouse.z = 0;
+
+        lookDir = (mouse - transform.position).normalized;
     }
 
-
-    public override void TakeDamage(float damage)
+    void InputAction()
     {
-        nowHP -= damage;
-        //hpBar.SetGauge(nowHP / maxHP);
-        if (nowHP < 0)
+        if (Keyboard.current.eKey.wasPressedThisFrame)
+            PickupWeapon();
+
+        if (Mouse.current.leftButton.wasPressedThisFrame)
         {
-            nowHP = 0;
-            Die();
+            if (currentWeapon != null)
+                currentWeapon.Attack();
         }
+
+        if (Mouse.current.rightButton.wasPressedThisFrame)
+        {
+            if (currentWeapon != null)
+            {
+                currentWeapon.Throw(lookDir, col);
+                currentWeapon = null;
+            }
+        }
+    }
+
+    protected override void Init()
+    {
+        maxHP = 10;
+        nowHP = maxHP;
+
+        moveSpeed = 10f;
+        handRotateSpeed = 400f;
+
+        isDead = false;
+
+        rb.linearVelocity = Vector2.zero;
     }
 
     protected override void Die()
@@ -83,28 +97,5 @@ public class PlayerController : Character
         isDead = true;
         dir = Vector2.zero;
         rb.linearVelocity = Vector2.zero;
-        //animator.SetBool("isDead", isDead);
-        //StageManager.Instance.StopSpawn();
-        //GameManager.Instance.GameOver();
     }
-
-    protected override void Init()
-    {
-        moveSpeed = 10f;
-        maxHP = 10;
-        nowHP = maxHP;
-        isMove = Animator.StringToHash("isMove");
-        isDead = false;
-
-        //hpBar.SetGauge(1f);
-
-        isDead = false;
-        //animator.SetBool("isDead", false);
-        //animator.Play("Idle");
-
-        transform.position = Vector3.zero;
-
-        rb.linearVelocity = Vector2.zero;
-    }
-
 }
