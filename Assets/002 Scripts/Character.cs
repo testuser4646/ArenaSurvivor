@@ -29,15 +29,33 @@ public abstract class Character : MonoBehaviour
         sr = GetComponent<SpriteRenderer>();
     }
 
+    [SerializeField] protected float acceleration = 100f;
+    [SerializeField] protected float deceleration = 40f;
+
+
+    void OnEnable()
+    {
+        CharacterManager.Instance.Register(this);
+    }
+
+    void OnDisable()
+    {
+        CharacterManager.Instance.UnRegister(this);
+    }
+
     protected virtual void FixedUpdate()
     {
         Vector2 targetVelocity = dir * moveSpeed;
 
-        rb.linearVelocity = Vector2.MoveTowards(
-            rb.linearVelocity,
-            targetVelocity,
-            100f * Time.fixedDeltaTime);
+        float accel = dir == Vector2.zero ? deceleration : acceleration;
+
+        rb.linearVelocity =
+            Vector2.MoveTowards(
+                rb.linearVelocity,
+                targetVelocity,
+                accel * Time.fixedDeltaTime);
     }
+
 
     public virtual void TakeDamage(float damage)
     {

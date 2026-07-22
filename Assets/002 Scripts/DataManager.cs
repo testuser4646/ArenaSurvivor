@@ -41,6 +41,6 @@ public class DataManager : MonoBehaviour
     {
         return weapons.GetValueOrDefault(id);
 
-        return weaponList.Where(weapon => weapon.id == id).FirstOrDefault();
+        //return weaponList.Where(weapon => weapon.id == id).FirstOrDefault();
     }
 }

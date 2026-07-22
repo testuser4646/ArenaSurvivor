@@ -662,6 +662,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StageManager
   spawnArea: []
+  day: 1
 --- !u!1001 &1654665890
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -873,7 +874,8 @@ MonoBehaviour:
   holdPoint: {fileID: 1261831146}
   handPivot: {fileID: 1377753611}
   currentWeapon: {fileID: 0}
-  nearbyWeapon: {fileID: 0}
+  acceleration: 100
+  deceleration: 40
 --- !u!212 &1764853072
 SpriteRenderer:
   serializedVersion: 2

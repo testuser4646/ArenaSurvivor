@@ -1,28 +1,32 @@
 using System.Collections.Generic;
-using System.Collections;
 using UnityEngine;
-using Unity.VisualScripting;
-
 
 public class StageManager : MonoBehaviour
 {
     public static StageManager Instance;
 
-    [SerializeField] List<Rect> spawnArea;
+    [Header("Stage")]
+    [SerializeField] int day = 1;
+
+    [Header("Enemy")]
+    [SerializeField] string enemyName = "Enemy_Blue";
+
+    [Header("Weapon")]
+    [SerializeField]
+    List<string> weaponNames = new() { "Axe", "Knife", "Hammer", "Pickaxe" };
+
+    [Header("Item")]
+    [SerializeField]
+    List<string> itemNames = new() { "Meat", "Wood" };
 
     float arenaRadius = 28f;
     Vector2 arenaCenter = Vector2.zero;
 
-    private List<string> enemyPoolNames
-        = new() { "Enemy_Blue", "Enemy_Purple", "Enemy_Red", "Enemy_Yellow" };
-    private List<string> weaponPoolNames
-        = new() { "Axe", "Knife", "Hammer", "Pickaxe" };
-    private List<string> itemPoolNames
-        = new() { "Meat", "Wood" };
+    List<GameObject> enemyList = new();
 
-
-    // 살아 있는 모든 적
-    List<GameObject> EnemyList = new List<GameObject>();
+    int enemyCount;
+    int weaponCount;
+    int itemCount;
 
     private void Awake()
     {
@@ -30,48 +34,68 @@ public class StageManager : MonoBehaviour
             Instance = this;
         else
             Destroy(gameObject);
+
         DontDestroyOnLoad(gameObject);
     }
 
-    private void Start()
+    void Start()
     {
-        SpawnObject(enemyPoolNames, 15);
-        SpawnObject(weaponPoolNames, 10);
-        SpawnObject(itemPoolNames, 10);
+        enemyCount = Mathf.Min(30 + (day - 1) * 10, 150);
+
+        weaponCount = enemyCount * 2;
+
+        itemCount = enemyCount / 2;
+
+        ObjectPoolManager.instance.CreatePool(enemyName, enemyCount);
+
+        foreach (string weapon in weaponNames)
+            ObjectPoolManager.instance.CreatePool(weapon, weaponCount / weaponNames.Count);
+
+        foreach (string item in itemNames)
+            ObjectPoolManager.instance.CreatePool(item, itemCount / itemNames.Count);
+
+        SpawnEnemy(enemyName, enemyCount);
+
+        SpawnRandom(weaponNames, weaponCount);
+
+        SpawnRandom(itemNames, itemCount);
     }
 
-
-    private Vector2 GetRandomPosition()
+    Vector2 GetRandomPosition()
     {
         return arenaCenter + Random.insideUnitCircle * arenaRadius;
     }
 
-    private void SpawnObject(List<string> poolNames, int count)
+    void SpawnEnemy(string enemyName, int count)
     {
-        GameObject obj;
-        for (int i=0;i<count; i++)
+        for (int i = 0; i < count; i++)
         {
-            string poolName = poolNames[Random.Range(0, poolNames.Count)];
+            GameObject obj =
+                ObjectPoolManager.instance.GetObject(enemyName);
 
-            obj = ObjectPoolManager.instance.GetObject(poolName);
-            
             obj.transform.position = GetRandomPosition();
 
-            if (poolName.StartsWith("Enemy"))
-                EnemyList.Add(obj);
+            enemyList.Add(obj);
         }
     }
 
+    void SpawnRandom(List<string> list, int count)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            string name =
+                list[Random.Range(0, list.Count)];
 
+            GameObject obj =
+                ObjectPoolManager.instance.GetObject(name);
 
-
-
-
-
+            obj.transform.position = GetRandomPosition();
+        }
+    }
 
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(new Vector3(0,0,0), arenaRadius);
+        Gizmos.DrawWireSphere(Vector3.zero, arenaRadius);
     }
 }

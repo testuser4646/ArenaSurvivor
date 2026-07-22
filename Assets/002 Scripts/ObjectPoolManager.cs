@@ -9,8 +9,6 @@ public class ObjectPoolManager : MonoBehaviour
 
     Dictionary<string, Queue<GameObject>> pools = new Dictionary<string, Queue<GameObject>>();
 
-    int poolSize;
-
     private void Awake()
     {
         if (instance == null)
@@ -22,42 +20,58 @@ public class ObjectPoolManager : MonoBehaviour
 
     void Start()
     {
-        poolSize = 10;
-        foreach (GameObject obj in objList)
+
+    }
+
+    public void CreatePool(string name, int count)
+    {
+        if (pools.ContainsKey(name))
+            return;
+
+        GameObject prefab =
+            objList.Find(x => x.name == name);
+
+        if (prefab == null)
+            return;
+
+        pools[name] = new Queue<GameObject>();
+
+        for (int i = 0; i < count; i++)
         {
-            pools[obj.name] = new Queue<GameObject>();
+            GameObject go = Instantiate(prefab);
 
-            GameObject parentPool = new GameObject($"{obj.name}.Pool");
-            parentPool.transform.SetParent(this.transform);
+            go.name = prefab.name;
 
-            for (int i = 0; i < poolSize; i++)
-            {
-                GameObject go = Instantiate(obj, parentPool.transform);
-                go.SetActive(false);
-                pools[obj.name].Enqueue(go);
-            }
+            go.SetActive(false);
+
+            pools[name].Enqueue(go);
         }
     }
 
     public GameObject GetObject(string name)
     {
         if (!pools.ContainsKey(name))
-        {
             return null;
-        }
+
         if (pools[name].Count > 0)
         {
             GameObject go = pools[name].Dequeue();
+
             go.SetActive(true);
 
             return go;
         }
-        else
-        {
-            GameObject go = Instantiate(objList.Find(obj => obj.name == name));
-            return go;
-        }
+
+        GameObject prefab = objList.Find(x => x.name == name);
+
+        GameObject obj = Instantiate(prefab);
+
+        obj.name = prefab.name;
+
+        return obj;
     }
+
+
 
     public void ReturnObject(string name, GameObject go)
     {

@@ -4,8 +4,11 @@ using UnityEngine;
 public class Weapon : MonoBehaviour
 {
     [SerializeField] int weaponID;
+    public int WeaponID => weaponID;
 
     WeaponInfo info;
+    public WeaponInfo Info => info;
+
     Rigidbody2D rb;
     Collider2D col;
 
@@ -14,14 +17,22 @@ public class Weapon : MonoBehaviour
     [SerializeField] LayerMask targetLayer;
 
 
-    bool isEquipped = false;
-    bool isAttacking = false;
-    bool isThrowing = false;
+    public bool isEquipped = false;
+    public bool isAttacking = false;
+    public bool isThrowing = false;
 
-    Vector2 startPos;
     int bounceCount;
     float currentSpeed;
     float travelDistance;
+    void OnEnable()
+    {
+        WeaponManager.Instance.Register(this);
+    }
+
+    void OnDisable()
+    {
+        WeaponManager.Instance.UnRegister(this);
+    }
 
     private void Awake()
     {
